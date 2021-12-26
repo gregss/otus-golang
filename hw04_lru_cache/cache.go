@@ -39,13 +39,17 @@ func (lc *lruCache) Set(key Key, value interface{}) bool {
 }
 
 func (lc *lruCache) Get(key Key) (interface{}, bool) {
-	li := lc.items[key]
-	if li == nil {
+	li, ok := lc.items[key]
+	if !ok || li == nil {
 		return nil, false
 	}
 	lc.queue.MoveToFront(li)
 
-	return li.Value.(cacheItem).value, li != nil
+	if li.Value != nil {
+		return li.Value.(cacheItem).value, true
+	}
+
+	return nil, false
 }
 
 func (lc *lruCache) Clear() {
@@ -54,7 +58,10 @@ func (lc *lruCache) Clear() {
 		if front == nil {
 			break
 		}
-		ci := lc.queue.Back().Value.(cacheItem)
+		ci, ok := lc.queue.Back().Value.(cacheItem)
+		if !ok {
+			return // выходим, но никому не сообщаем что работа не выполнена
+		}
 		delete(lc.items, ci.key)
 		lc.queue.Remove(lc.queue.Back())
 	}

@@ -17,13 +17,13 @@ type ListItem struct {
 }
 
 type list struct {
-	l     int
+	len   int
 	front *ListItem
 	back  *ListItem
 }
 
 func (l *list) Len() int {
-	return l.l
+	return l.len
 }
 
 func (l *list) Front() *ListItem {
@@ -43,19 +43,19 @@ func (l *list) PushFront(v interface{}) *ListItem {
 		l.back = li
 	}
 	l.front = li
-	l.l++
+	l.len++
 
 	return l.front
 }
 
 func (l *list) PushBack(v interface{}) *ListItem {
-	if l.l == 0 {
+	if l.len == 0 {
 		return l.PushFront(v)
 	}
 
 	l.back = &ListItem{Value: v, Next: nil, Prev: l.back}
 	l.back.Prev.Next = l.back
-	l.l++
+	l.len++
 
 	return l.back
 }
@@ -78,7 +78,7 @@ func (l *list) Remove(i *ListItem) {
 		i.Next.Prev = i.Prev
 		i.Prev.Next = i.Next
 	}
-	l.l--
+	l.len--
 }
 
 func (l *list) MoveToFront(i *ListItem) {
