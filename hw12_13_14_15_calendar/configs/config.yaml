@@ -1,0 +1,9 @@
+logger:
+  level: info
+  file: calendar.log
+storage:
+  type: notmemory
+  dsn: postgres://postgres:postgres@localhost:5432/postgres
+
+# TODO
+# ...

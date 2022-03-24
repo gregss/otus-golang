@@ -2,30 +2,52 @@ package internalhttp
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+	"time"
 )
 
-type Server struct { // TODO
+type Server struct {
+	logger Logger
+	app    Application
+	server *http.Server
 }
 
-type Logger interface { // TODO
+type Logger interface {
+	Debug(msg string)
+	Info(msg string)
+	Warning(msg string)
+	Error(msg string)
 }
 
-type Application interface { // TODO
+type MyHandler struct{}
+
+type Application interface{}
+
+func (h *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/" {
+		time.Sleep(500 * time.Millisecond) // имитация работы
+		statusCode := http.StatusOK
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(statusCode)
+		_ = json.NewEncoder(w).Encode("OK")
+	}
 }
 
 func NewServer(logger Logger, app Application) *Server {
-	return &Server{}
+	server := &http.Server{
+		Addr:         ":8080",
+		Handler:      loggingMiddleware(&MyHandler{}, logger),
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+	return &Server{logger: logger, app: app, server: server}
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	// TODO
-	<-ctx.Done()
-	return nil
+	return s.server.ListenAndServe()
 }
 
 func (s *Server) Stop(ctx context.Context) error {
-	// TODO
-	return nil
+	return s.server.Close()
 }
-
-// TODO
