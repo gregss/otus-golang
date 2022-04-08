@@ -11,6 +11,7 @@ import (
 
 	"github.com/gregss/otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/gregss/otus/hw12_13_14_15_calendar/internal/logger"
+	internalgrpc "github.com/gregss/otus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/gregss/otus/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/gregss/otus/hw12_13_14_15_calendar/internal/storage/memory"
 	sqlstorage "github.com/gregss/otus/hw12_13_14_15_calendar/internal/storage/sql"
@@ -35,7 +36,7 @@ func main() {
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	config := NewConfig()
+	config := NewConfig(configFile)
 	logg := logger.New(config.Logger.Level, config.Logger.File)
 
 	var storage app.Storage
@@ -61,7 +62,7 @@ func main() {
 	}
 	calendar := app.New(logg, storage)
 
-	server := internalhttp.NewServer(logg, calendar)
+	server := internalhttp.NewServer(*logg, *calendar, config.Server.Hport)
 
 	go func() {
 		<-ctx.Done()
@@ -73,6 +74,8 @@ func main() {
 			logg.Error("failed to stop http server: " + err.Error())
 		}
 	}()
+
+	internalgrpc.StartServer(*logg, *calendar, config.Server.Gport)
 
 	logg.Info("calendar is running...")
 

@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/gregss/otus/hw12_13_14_15_calendar/internal/logger"
 )
 
-func loggingMiddleware(next http.Handler, logger Logger) http.Handler {
+func loggingMiddleware(next http.Handler, logger logger.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		next.ServeHTTP(w, r)

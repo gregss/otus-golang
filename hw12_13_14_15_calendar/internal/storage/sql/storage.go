@@ -11,6 +11,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type DBStorage interface {
+	Connect(ctx context.Context) error
+	Close(ctx context.Context) error
+}
+
 type Storage struct {
 	dsn string
 	con *sqlx.DB
@@ -111,9 +116,9 @@ func (s *Storage) DayEvents(date time.Time) []storage.Event {
 }
 
 func (s *Storage) WeekEvents(date time.Time) []storage.Event {
-	return nil
+	return nil // todo
 }
 
 func (s *Storage) MonthEvents(date time.Time) []storage.Event {
-	return nil
+	return nil // todo
 }

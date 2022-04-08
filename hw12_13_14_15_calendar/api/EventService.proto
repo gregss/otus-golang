@@ -2,6 +2,30 @@ syntax = "proto3";
 
 package event;
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "./;pb";
+
+service Calendar {
+  rpc CreateEvent (Event) returns (google.protobuf.Empty) {}
+  rpc ChangeEvent (Event) returns (google.protobuf.Empty) {}
+  rpc RemoveEvent (Event) returns (google.protobuf.Empty) {}
+  rpc DayEvents (Event) returns (EventResponse) {}
+  rpc WeekEvents (Event) returns (EventResponse) {}
+  rpc MonthEvents (Event) returns (EventResponse) {}
+}
+
 message Event {
-    // TODO
+      uint32 ID = 1;
+      string Title = 2;
+      string Description = 3;
+      uint32 UserID = 4;
+      google.protobuf.Timestamp Time = 5;
+      uint32 Duration = 6;
+      google.protobuf.Timestamp NotifyTime = 7;
+}
+
+message EventResponse {
+  repeated Event events = 1;
 }

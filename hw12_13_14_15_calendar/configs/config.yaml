@@ -4,6 +4,6 @@ logger:
 storage:
   type: notmemory
   dsn: postgres://postgres:postgres@localhost:5432/postgres
-
-# TODO
-# ...
+server:
+  hport: 8080
+  gpost: 50051

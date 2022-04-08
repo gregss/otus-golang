@@ -1,19 +1,16 @@
 package main
 
 import (
-	"flag"
 	"io/ioutil"
 	"log"
 
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
-// При желании конфигурацию можно вынести в internal/config.
-// Организация конфига в main принуждает нас сужать API компонентов, использовать
-// при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
 type Config struct {
 	Logger  LoggerConf
 	Storage StorageConf
+	Server  ServerConf
 }
 
 type LoggerConf struct {
@@ -26,12 +23,13 @@ type StorageConf struct {
 	Dsn  string
 }
 
-func NewConfig() (config Config) {
-	var configFile *string
-	flag.StringVar(configFile, "config", "", "verbose output")
-	flag.Parse()
+type ServerConf struct {
+	Hport string
+	Gport string
+}
 
-	yamlFile, err := ioutil.ReadFile(*configFile)
+func NewConfig(configFile string) (config Config) {
+	yamlFile, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,5 +39,3 @@ func NewConfig() (config Config) {
 	}
 	return
 }
-
-// TODO
