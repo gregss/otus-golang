@@ -80,3 +80,37 @@ func TestTop10(t *testing.T) {
 		}
 	})
 }
+
+func TestLes10Str(t *testing.T) {
+	t.Run("positive test", func(t *testing.T) {
+		expected := []string{
+			"Как",
+			"видите,",
+			"лестнице",
+			"он",
+			"по",
+			"спускается",
+		}
+		require.Equal(t, expected, Top10(`Как видите, он  спускается  по  лестнице`))
+	})
+}
+
+func TestMore10SameFrequency(t *testing.T) {
+	t.Run("positive test", func(t *testing.T) {
+		expected := []string{
+			"А",
+			"Б",
+			"В",
+			"Г",
+			"Д",
+			"Е",
+			"Ж",
+			"З",
+			"И",
+			"К",
+			"Л",
+			"М",
+		}
+		require.Equal(t, expected, Top10(`А Б В Г Д Е Ж З И К Л М`))
+	})
+}
