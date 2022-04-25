@@ -1,20 +1,41 @@
 package main
 
-// При желании конфигурацию можно вынести в internal/config.
-// Организация конфига в main принуждает нас сужать API компонентов, использовать
-// при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
+import (
+	"io/ioutil"
+	"log"
+
+	yaml "gopkg.in/yaml.v2"
+)
+
 type Config struct {
-	Logger LoggerConf
-	// TODO
+	Logger  LoggerConf
+	Storage StorageConf
+	Server  ServerConf
 }
 
 type LoggerConf struct {
 	Level string
-	// TODO
+	File  string
 }
 
-func NewConfig() Config {
-	return Config{}
+type StorageConf struct {
+	Type string
+	Dsn  string
 }
 
-// TODO
+type ServerConf struct {
+	Hport string
+	Gport string
+}
+
+func NewConfig(configFile string) (config Config) {
+	yamlFile, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = yaml.Unmarshal(yamlFile, &config)
+	if err != nil {
+		log.Fatalf("Unmarshal: %v", err)
+	}
+	return
+}
