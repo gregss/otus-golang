@@ -7,15 +7,6 @@ import (
 	"github.com/gregss/otus/hw12_13_14_15_calendar/internal/storage"
 )
 
-/*type Application interface {
-	CreateEvent(ctx context.Context, title string) error
-	ChangeEvent(ctx context.Context, id int, title string) error
-	RemoveEvent(ctx context.Context, id int) error
-	DayEvents(ctx context.Context, date time.Time) []storage.Event
-	WeekEvents(ctx context.Context, date time.Time) []storage.Event
-	MonthEvents(ctx context.Context, date time.Time) []storage.Event
-}*/
-
 type App struct {
 	logger  Logger
 	storage Storage
@@ -35,6 +26,7 @@ type Storage interface {
 	DayEvents(date time.Time) []storage.Event
 	WeekEvents(date time.Time) []storage.Event
 	MonthEvents(date time.Time) []storage.Event
+	DelPrevYearEvents() error
 }
 
 func New(logger Logger, storage Storage) *App {
@@ -65,4 +57,8 @@ func (a *App) WeekEvents(ctx context.Context, date time.Time) []storage.Event {
 
 func (a *App) MonthEvents(ctx context.Context, date time.Time) []storage.Event {
 	return a.storage.MonthEvents(date)
+}
+
+func (a *App) DelPrevYearEvents(ctx context.Context) error {
+	return a.storage.DelPrevYearEvents()
 }

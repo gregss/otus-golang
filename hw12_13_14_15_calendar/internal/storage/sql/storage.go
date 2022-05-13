@@ -84,6 +84,11 @@ func (s *Storage) Delete(id int) error {
 func (s *Storage) DayEvents(date time.Time) []storage.Event {
 	events := make([]storage.Event, 0)
 	rows, _ := s.con.Query(`select * from events where start_date = $1`, date)
+
+	if rows == nil {
+		return nil
+	}
+
 	defer rows.Close()
 	for rows.Next() {
 		event := new(storage.Event)
@@ -101,14 +106,14 @@ func (s *Storage) DayEvents(date time.Time) []storage.Event {
 			&endTime,
 		)
 		if err != nil {
-			fmt.Printf("%v", err)
+			fmt.Printf("error storage. scan event (%v)", err)
 		}
 
 		events = append(events, *event)
 	}
 
 	if rows.Err() != nil {
-		fmt.Printf("%v", rows.Err())
+		fmt.Printf("error query (%v)", rows.Err())
 		return nil
 	}
 
@@ -121,4 +126,12 @@ func (s *Storage) WeekEvents(date time.Time) []storage.Event {
 
 func (s *Storage) MonthEvents(date time.Time) []storage.Event {
 	return nil // todo
+}
+
+func (s *Storage) DelPrevYearEvents() error {
+	_, err := s.con.Exec(
+		`delete from events where start_date < $1`,
+		time.Now().AddDate(-1, 0, 0))
+
+	return err
 }

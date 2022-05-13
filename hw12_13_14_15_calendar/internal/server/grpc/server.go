@@ -126,7 +126,8 @@ func StartServer(logger logger.Logger, app app.App, port string) {
 				ctx context.Context,
 				req interface{},
 				info *grpc.UnaryServerInfo,
-				handler grpc.UnaryHandler) (resp interface{}, err error) {
+				handler grpc.UnaryHandler,
+			) (resp interface{}, err error) {
 				logger.Info(fmt.Sprintf("requested: %v", info.FullMethod))
 				return nil, nil
 			},

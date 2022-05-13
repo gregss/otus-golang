@@ -74,3 +74,7 @@ func (s *Storage) MonthEvents(date time.Time) []storage.Event {
 
 	return result
 }
+
+func (s *Storage) DelPrevYearEvents() error {
+	return nil
+}

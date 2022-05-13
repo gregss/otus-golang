@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gregss/otus/hw12_13_14_15_calendar/internal/app"
+	"github.com/gregss/otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/gregss/otus/hw12_13_14_15_calendar/internal/logger"
 	internalgrpc "github.com/gregss/otus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/gregss/otus/hw12_13_14_15_calendar/internal/server/http"
@@ -18,32 +18,23 @@ import (
 	_ "github.com/jackc/pgx/stdlib"
 )
 
-var configFile string
-
-func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.yaml", "Path to configuration file")
-}
-
 func main() {
-	flag.Parse()
-
-	if flag.Arg(0) == "version" {
-		printVersion()
-		return
-	}
+	time.Sleep(5 * time.Second)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	config := NewConfig(configFile)
-	logg := logger.New(config.Logger.Level, config.Logger.File)
+	cnf := &config.Config{}
+	config.LoadConfig(cnf)
+	logg := logger.New(cnf.Logger.Level, cnf.Logger.File)
 
 	var storage app.Storage
-	if config.Storage.Type == "memory" {
+	if cnf.Storage.Type == "memory" {
 		storage = memorystorage.New()
 	} else {
-		s := sqlstorage.New(config.Storage.Dsn)
+		s := sqlstorage.New(cnf.Storage.Dsn)
+		fmt.Printf("connect to (%v)", cnf.Storage.Dsn)
 
 		go func() {
 			<-ctx.Done()
@@ -51,19 +42,20 @@ func main() {
 		}()
 
 		if err := s.Connect(ctx); err != nil {
-			fmt.Printf("%v", err)
+			fmt.Printf("error connect storage (%v)", err)
+			return
 		}
 
 		if err := s.Ping(); err != nil {
-			fmt.Printf("%v", err)
+			fmt.Printf("error ping storage (%v)", err)
+			return
 		}
 
 		storage = s
 	}
 	calendar := app.New(logg, storage)
 
-	server := internalhttp.NewServer(*logg, *calendar, config.Server.Hport)
-
+	server := internalhttp.NewServer(*logg, *calendar, cnf.Server.Hport)
 	go func() {
 		<-ctx.Done()
 
@@ -75,13 +67,15 @@ func main() {
 		}
 	}()
 
-	internalgrpc.StartServer(*logg, *calendar, config.Server.Gport)
+	go func() {
+		if err := server.Start(ctx); err != nil {
+			logg.Error("failed to start http server: " + err.Error())
+			cancel()
+			os.Exit(1)
 
-	logg.Info("calendar is running...")
+			logg.Info("http server running")
+		}
+	}()
 
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		cancel()
-		os.Exit(1) // nolint:gocritic
-	}
+	internalgrpc.StartServer(*logg, *calendar, cnf.Server.Gport)
 }

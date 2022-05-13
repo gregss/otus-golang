@@ -3,9 +3,7 @@ package internalhttp
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -50,7 +48,7 @@ type TimeEventRequest struct {
 }
 
 type TimeEventResponse struct {
-	Events interface{} `json:"events"`
+	Events []storage.Event `json:"events"`
 }
 
 type ErrorResponse struct {
@@ -148,27 +146,18 @@ func (h *MyHandler) dayEvents(w http.ResponseWriter, r *http.Request) {
 	resp := &TimeEventResponse{}
 	errresp := &ErrorResponse{}
 
-	if r.Method != http.MethodPost {
-		errresp.Error.Message = fmt.Sprintf("method %s not not supported on uri %s", r.Method, r.URL.Path)
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		WriteResponse(w, resp)
-		return
-	}
 	buf := make([]byte, r.ContentLength)
-	_, err := r.Body.Read(buf)
-	if err != nil && errors.Is(err, io.EOF) {
-		errresp.Error.Message = err.Error()
-		w.WriteHeader(http.StatusBadRequest)
-		WriteResponse(w, resp)
-		return
-	}
+	_, _ = r.Body.Read(buf)
 
-	req := &TimeEventRequest{}
-	err = json.Unmarshal(buf, req)
+	req := &CreateEditRequest{}
+	_ = json.Unmarshal(buf, req)
+
+	err := json.Unmarshal(buf, req)
 	if err != nil {
 		errresp.Error.Message = err.Error()
 		w.WriteHeader(http.StatusBadRequest)
 		WriteResponse(w, resp)
+		fmt.Println(err.Error())
 		return
 	}
 
