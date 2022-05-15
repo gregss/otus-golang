@@ -56,6 +56,12 @@ func (c *Client) Receive() (err error) {
 	return
 }
 
-func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, out io.Writer) TelnetClient {
-	return &Client{context.Background(), address, timeout, in, out, nil}
+func NewTelnetClient(
+	ctx context.Context,
+	address string,
+	timeout time.Duration,
+	in io.ReadCloser,
+	out io.Writer,
+) TelnetClient {
+	return &Client{ctx, address, timeout, in, out, nil}
 }
