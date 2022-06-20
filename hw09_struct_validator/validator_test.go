@@ -2,8 +2,11 @@ package hw09structvalidator
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type UserRole string
@@ -42,10 +45,29 @@ func TestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			// Place your code here.
+			in:          "not struct",
+			expectedErr: errors.New("is`t type struct"),
 		},
-		// ...
-		// Place your code here.
+		{
+			in:          App{Version: "ver10"},
+			expectedErr: nil,
+		},
+		{
+			in:          App{Version: "ver1"},
+			expectedErr: errors.New("field: Version, err: len"),
+		},
+		{
+			in: User{
+				ID:     "e169cb96-223c-41ac-8fa0-af5e1614cfba",
+				Name:   "name",
+				Age:    25,
+				Email:  "email@email.com",
+				Role:   "admin",
+				Phones: []string{"phone1", "phone2"},
+				meta:   []byte{30, 50},
+			},
+			expectedErr: errors.New("field: Phones, err: len"),
+		},
 	}
 
 	for i, tt := range tests {
@@ -53,8 +75,13 @@ func TestValidate(t *testing.T) {
 			tt := tt
 			t.Parallel()
 
-			// Place your code here.
-			_ = tt
+			err := Validate(tt.in)
+
+			if tt.expectedErr == nil {
+				assert.Nil(t, err)
+			} else {
+				assert.Equal(t, tt.expectedErr.Error(), err.Error())
+			}
 		})
 	}
 }
